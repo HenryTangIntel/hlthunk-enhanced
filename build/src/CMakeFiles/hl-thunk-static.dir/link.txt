@@ -1,0 +1,2 @@
+/usr/bin/ar qc ../lib/libhl-thunk-static.a CMakeFiles/hl-thunk-static.dir/libhlthunk.c.o CMakeFiles/hl-thunk-static.dir/libhlthunk_nic.c.o CMakeFiles/hl-thunk-static.dir/version.c.o
+/usr/bin/ranlib ../lib/libhl-thunk-static.a

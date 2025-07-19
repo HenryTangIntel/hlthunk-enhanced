@@ -1,0 +1,21 @@
+# COPYRIGHT (c) 2021 Habanalabs Ltd. See COPYING.md file
+
+include_directories(
+        ${CMAKE_BINARY_DIR}
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/specs
+        ${CMAKE_SOURCE_DIR}/include/uapi
+)
+
+add_executable (demo main.c)
+add_executable (dmabuf_demo dmabuf.c)
+add_executable (device_utilization_demo device_utilization.c)
+add_executable (open_after_ports_up_demo open_after_ports_up.c)
+
+set(DEMO_LINK_LIBRARIES
+    ${HLTHUNK_TARGET} ${HLTHUNK_TESTS_LIBRARY} ${HLTHUNK_ERR_INJECT_TARGET})
+
+target_link_libraries(demo ${DEMO_LINK_LIBRARIES})
+target_link_libraries(dmabuf_demo ${DEMO_LINK_LIBRARIES})
+target_link_libraries(device_utilization_demo ${DEMO_LINK_LIBRARIES} ncurses)
+target_link_libraries(open_after_ports_up_demo ${DEMO_LINK_LIBRARIES})
