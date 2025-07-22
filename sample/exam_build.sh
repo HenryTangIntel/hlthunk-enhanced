@@ -1,0 +1,1 @@
+ gcc -g -O0 -Wall -Werror -I../include -I/usr/include/libdrm -I../include/specs/common -I/usr/include/habanalabs -I/opt/habanalabs/src/hl-thunk/include/uapi     -L/usr/lib/habanalabs -L/workspace/hlthunk-enhanced/build/lib     -o working_dma_test ./working_dma_test.c ../tests/config_iterator/config_iterator.c     -lhl-thunk -lhl-thunk-tests -lhl-thunk-err_injection

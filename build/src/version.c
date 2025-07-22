@@ -1,2 +1,0 @@
-extern const char* HLTHUNK_SHA1_VERSION;
-const char* HLTHUNK_SHA1_VERSION = "";

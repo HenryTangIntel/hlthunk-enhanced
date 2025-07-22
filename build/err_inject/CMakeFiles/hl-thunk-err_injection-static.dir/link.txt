@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../lib/libhl-thunk-err_injection-static.a CMakeFiles/hl-thunk-err_injection-static.dir/libhlthunk_asic_gaudi.c.o CMakeFiles/hl-thunk-err_injection-static.dir/libhlthunk_asic_goya.c.o CMakeFiles/hl-thunk-err_injection-static.dir/libhlthunk_err_inject.c.o CMakeFiles/hl-thunk-err_injection-static.dir/libhlthunk_supp.c.o
-/usr/bin/ranlib ../lib/libhl-thunk-err_injection-static.a

@@ -32,5 +32,5 @@ fi
 
 cd "$BUILDDIR"
 
-$CMAKE -DCMAKE_BUILD_TYPE="Release" ${EXTRA_CMAKE_FLAGS:-} ..
+$CMAKE -DCMAKE_BUILD_TYPE="Debug" ${EXTRA_CMAKE_FLAGS:-} ..
 make -j8
