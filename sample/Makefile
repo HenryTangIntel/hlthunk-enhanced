@@ -12,22 +12,22 @@ LIBS_ORIGINAL = -L$(LIBDIR) -lhl-thunk -lhl-thunk-tests -lhl-thunk-err_injection
 LIBS_STANDALONE = -L$(LIBDIR) -lhl-thunk -lhl-thunk-err_injection -lpthread -ldl 
 
 # Targets
-TARGETS = working_dma_test_embedded 
+TARGETS = wkdma 
 
 .PHONY: all clean test help
 
 all: $(TARGETS)
 
 # Embedded DMA test version (requires libhl-thunk-tests)
-working_dma_test_embedded: working_dma_test_embedded.c
-	@echo "Building working_dma_test_embedded (requires libhl-thunk-tests)..."
+wkdma: wkdma.c
+	@echo "Building wkdma (requires libhl-thunk-tests)..."
 	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(LIBS_ORIGINAL)
 
 # Test all versions
 test: $(TARGETS)
-	@echo "Testing working_dma_test_embedded..."
-	@if [ -f working_dma_test_embedded ]; then \
-		./working_dma_test_embedded || echo "Test failed or no device available"; \
+	@echo "Testing wkdma..."
+	@if [ -f wkdma ]; then \
+		./wkdma || echo "Test failed or no device available"; \
 	fi
 
 clean:
@@ -37,7 +37,7 @@ clean:
 help:
 	@echo "Available targets:"
 	@echo "  all                           - Build all versions"
-	@echo "  working_dma_test_embedded     - Build embedded test version (needs libhl-thunk-tests)"
+	@echo "  wkdma     - Build embedded test version (needs libhl-thunk-tests)"
 	@echo "  test                          - Run test executable"
 	@echo "  clean                         - Remove built executables"
 	@echo "  help                          - Show this help"
