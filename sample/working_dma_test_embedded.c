@@ -140,6 +140,86 @@ const size_t *config_iterator_next(struct config_iterator *iter)
 }
 
 
+struct thltests_device {
+	const struct hltests_asic_funcs *asic_funcs;
+
+	khash_t(ptr64) * mem_table_host;
+
+	pthread_mutex_t mem_table_host_lock;
+
+	khash_t(ptr64) * mem_table_device;
+
+	pthread_mutex_t mem_table_device_lock;
+
+	khash_t(ptr64) * cb_table;
+	struct ibv_device *ibdev;
+	uint32_t *hl_to_ib_port_map;
+
+	pthread_mutex_t cb_table_lock;
+
+	khash_t(mapping) * mmap_table;
+	pthread_mutex_t mmap_table_lock;
+
+	void *priv;
+	int fd;
+	int refcnt;
+	enum hl_pci_ids device_id;
+	bool sim_dram_on_host;
+	uint32_t vm;
+	int32_t vm_fd;
+	struct hltests_module_params_info module_params;
+	struct hltests_arc_db arc_db;
+	struct hltests_pdma_db pdma_db;
+	struct sm_global_counters counters;
+	struct sm_global_counters cq_db_counters;
+	struct hltests_mme_dma_info mme_dma_info;
+	struct hltests_completion_db completion_db;
+
+	void *nic_test_ctx;
+};
+
+
+struct thltests_memory {
+	uint64_t device_handle;
+	void *host_ptr;
+	uint64_t device_virt_addr;
+	uint64_t size;
+	bool is_huge;
+	bool is_host;
+	bool is_pool;
+};
+
+
+
+
+uint64_t hltests_get_device_va_for_host_ptr(int fd, void *vaddr)
+{
+	struct hltests_device *hdev;
+	struct hltests_memory *mem;
+
+	khint_t k;
+
+	hdev = get_hdev_from_fd(fd);
+	if (!hdev)
+		return 0;
+
+	pthread_mutex_lock(&hdev->mem_table_host_lock);
+
+	k = kh_get(ptr64, hdev->mem_table_host, (uintptr_t) vaddr);
+	if (k == kh_end(hdev->mem_table_host)) {
+		pthread_mutex_unlock(&hdev->mem_table_host_lock);
+		return 0;
+	}
+
+	mem = kh_val(hdev->mem_table_host, k);
+
+	pthread_mutex_unlock(&hdev->mem_table_host_lock);
+
+	return mem->device_virt_addr;
+}
+
+
+
 
 #define TEST_SIZE_KB  64  // 64KB test size
 #define TEST_SIZE     (TEST_SIZE_KB * 1024)
@@ -159,24 +239,14 @@ void print_test_result(const char* test_name, struct test_result* result) {
     }
 }
 
-struct test_result test_host_to_device(int fd) {
+struct test_result test_host_to_device(int fd, void *host_ptr) {
     struct test_result result = {0};
-    void *host_ptr = NULL;
     uint64_t device_va = 0;
     void *device_addr = NULL;
     struct timespec start, end;
     double time_sec, bandwidth;
     int rc;
 
-    printf("  Allocating host memory...\n");
-    host_ptr = hltests_allocate_host_mem(fd, TEST_SIZE, NOT_HUGE_MAP);
-    if (!host_ptr) {
-        snprintf(result.error_msg, sizeof(result.error_msg),
-                "Failed to allocate host memory");
-        return result;
-    }
-
-    memset(host_ptr, 0xAA, TEST_SIZE);
 
     printf("  Getting device VA for host pointer...\n");
     device_va = hltests_get_device_va_for_host_ptr(fd, host_ptr);
@@ -230,24 +300,15 @@ cleanup:
     return result;
 }
 
-struct test_result test_device_to_host(int fd) {
+struct test_result test_device_to_host(int fd, void *host_ptr) {
     struct test_result result = {0};
-    void *host_ptr = NULL;
     uint64_t device_va = 0;
     void *device_addr = NULL;
     struct timespec start, end;
     double time_sec, bandwidth;
     int rc;
 
-    printf("  Allocating host memory...\n");
-    host_ptr = hltests_allocate_host_mem(fd, TEST_SIZE, NOT_HUGE_MAP);
-    if (!host_ptr) {
-        snprintf(result.error_msg, sizeof(result.error_msg),
-                "Failed to allocate host memory");
-        return result;
-    }
 
-    memset(host_ptr, 0x00, TEST_SIZE);
 
     printf("  Getting device VA for host pointer...\n");
     device_va = hltests_get_device_va_for_host_ptr(fd, host_ptr);
@@ -385,15 +446,41 @@ int main(void) {
 
     // Test H2D (Host to Device)
     printf("Testing Host-to-Device (H2D) DMA (%d KB)...\n", TEST_SIZE_KB);
-    h2d_result = test_host_to_device(fd);
+
+    
+    printf("  Allocating host memory...\n");
+    void *host_ptr = hltests_allocate_host_mem(fd, TEST_SIZE, NOT_HUGE_MAP);
+    if (!host_ptr) {
+        printf("Failed to allocate host memory");
+        return -1;
+    }
+
+    memset(host_ptr, 0xAA, TEST_SIZE);
+
+    h2d_result = test_host_to_device(fd, host_ptr);
     print_test_result("H2D DMA", &h2d_result);
     printf("\n");
 
     // Test D2H (Device to Host)
     printf("Testing Device-to-Host (D2H) DMA (%d KB)...\n", TEST_SIZE_KB);
-    d2h_result = test_device_to_host(fd);
+
+    printf("  Allocating host memory...\n");
+    void *host_ptr1 = hltests_allocate_host_mem(fd, TEST_SIZE, NOT_HUGE_MAP);
+    if (!host_ptr1) {
+        printf("Failed to allocate host memory");
+        return -1;
+    }
+
+    memset(host_ptr1, 0x00, TEST_SIZE);
+    d2h_result = test_device_to_host(fd, host_ptr);
     print_test_result("D2H DMA", &d2h_result);
+    int rec =  memcmp(host_ptr1, host_ptr, TEST_SIZE);
+    printf("Memory comparison result: %s\n", rec == 0 ? "MATCH" : "MISMATCH");
     printf("\n");
+
+    // Free the host memory used for D2H
+    hltests_free_host_mem(fd, host_ptr1);   
+    hltests_free_host_mem(fd, host_ptr);
 
     // Test D2D (Device to Device)
     printf("Testing Device-to-Device (D2D) DMA (%d KB)...\n", TEST_SIZE_KB);
