@@ -172,6 +172,41 @@ int enhanced_dma_validate_h2d_params(enhanced_dma_device_handle_t device_handle,
 }
 
 /**
+ * @brief Validate transfer parameters for D2H operation
+ */
+int enhanced_dma_validate_d2h_params(enhanced_dma_device_handle_t device_handle,
+                                      enhanced_dma_device_ptr_t device_src,
+                                      enhanced_dma_host_ptr_t host_dst,
+                                      enhanced_dma_size_t size,
+                                      enhanced_dma_flags_t flags) {
+    (void)flags; /* flags validation would be added here */
+    
+    /* Validate device handle */
+    EDMA_CHECK_NULL(device_handle, "device_handle");
+    
+    if (!enhanced_dma_validate_device_handle(device_handle)) {
+        EDMA_RETURN_ERROR(EDMA_INVALID_PARAM, "Invalid device handle");
+    }
+    
+    /* Validate device source address */
+    if (!enhanced_dma_is_device_memory(device_handle, device_src)) {
+        EDMA_RETURN_ERROR(EDMA_MEMORY_ERROR, "Invalid device memory address: 0x%lx", device_src);
+    }
+    
+    /* Validate host destination pointer */
+    EDMA_CHECK_NULL(host_dst, "host_dst");
+    
+    if (!enhanced_dma_is_host_memory(host_dst)) {
+        EDMA_RETURN_ERROR(EDMA_MEMORY_ERROR, "Invalid host memory pointer");
+    }
+    
+    /* Validate transfer size */
+    EDMA_CHECK_SIZE(size);
+    
+    return EDMA_SUCCESS;
+}
+
+/**
  * @brief Perform the actual H2D DMA transfer (mock implementation)
  */
 int enhanced_dma_perform_h2d_transfer(enhanced_dma_device_handle_t device_handle,
@@ -188,6 +223,38 @@ int enhanced_dma_perform_h2d_transfer(enhanced_dma_device_handle_t device_handle
     /* This is a mock implementation. In the real implementation, this would:
      * 1. Get appropriate DMA queue from hl-thunk
      * 2. Set up DMA transfer using hl-thunk APIs
+     * 3. Wait for completion
+     * 4. Handle any hardware errors
+     * 
+     * For now, we simulate a successful transfer.
+     */
+    
+    /* Simulate some basic validation */
+    if (size == 0) {
+        EDMA_RETURN_ERROR(EDMA_INVALID_PARAM, "Transfer size cannot be zero");
+    }
+    
+    /* Simulate successful transfer */
+    return EDMA_SUCCESS;
+}
+
+/**
+ * @brief Perform the actual D2H DMA transfer (mock implementation)
+ */
+int enhanced_dma_perform_d2h_transfer(enhanced_dma_device_handle_t device_handle,
+                                       enhanced_dma_device_ptr_t device_src,
+                                       enhanced_dma_host_ptr_t host_dst,
+                                       enhanced_dma_size_t size,
+                                       enhanced_dma_flags_t flags) {
+    (void)device_handle;
+    (void)device_src;
+    (void)host_dst;
+    (void)size;
+    (void)flags;
+    
+    /* This is a mock implementation. In the real implementation, this would:
+     * 1. Get appropriate DMA queue from hl-thunk
+     * 2. Set up DMA transfer using hl-thunk APIs  
      * 3. Wait for completion
      * 4. Handle any hardware errors
      * 
@@ -250,20 +317,39 @@ int enhanced_dma_sync_h2d(enhanced_dma_device_handle_t device_handle,
 
 /**
  * @brief Synchronous Device-to-Host (D2H) DMA transfer
- * @note Not yet implemented - will be added in Task 3
  */
 int enhanced_dma_sync_d2h(enhanced_dma_device_handle_t device_handle,
                           enhanced_dma_device_ptr_t device_src,
                           enhanced_dma_host_ptr_t host_dst,
                           enhanced_dma_size_t size,
                           enhanced_dma_flags_t flags) {
-    (void)device_handle;
-    (void)device_src;
-    (void)host_dst;
-    (void)size;
-    (void)flags;
     
-    EDMA_RETURN_ERROR(EDMA_HARDWARE_ERROR, "D2H transfer not yet implemented");
+    /* Initialize library if needed */
+    if (!g_library_initialized) {
+        int init_result = enhanced_dma_internal_init();
+        if (init_result != EDMA_SUCCESS) {
+            return init_result;
+        }
+    }
+    
+    /* Clear any previous error state */
+    memset(&g_error_context, 0, sizeof(g_error_context));
+    
+    /* Validate all parameters */
+    int validation_result = enhanced_dma_validate_d2h_params(device_handle, device_src, 
+                                                             host_dst, size, flags);
+    if (validation_result != EDMA_SUCCESS) {
+        return validation_result;
+    }
+    
+    /* Perform the actual transfer */
+    int transfer_result = enhanced_dma_perform_d2h_transfer(device_handle, device_src,
+                                                           host_dst, size, flags);
+    if (transfer_result != EDMA_SUCCESS) {
+        return transfer_result;
+    }
+    
+    return EDMA_SUCCESS;
 }
 
 /**

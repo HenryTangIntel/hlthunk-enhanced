@@ -21,12 +21,12 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
   - [x] 2.4 Implement comprehensive error handling for H2D
   - [x] 2.5 Verify all tests pass for H2D functionality
 
-- [ ] 3. Implement Synchronous D2H Transfer API  
-  - [ ] 3.1 Write tests for enhanced_dma_sync_d2h function
-  - [ ] 3.2 Implement enhanced_dma_sync_d2h with parameter validation
-  - [ ] 3.3 Add device memory address validation
-  - [ ] 3.4 Implement comprehensive error handling for D2H
-  - [ ] 3.5 Verify all tests pass for D2H functionality
+- [x] 3. Implement Synchronous D2H Transfer API  
+  - [x] 3.1 Write tests for enhanced_dma_sync_d2h function
+  - [x] 3.2 Implement enhanced_dma_sync_d2h with parameter validation
+  - [x] 3.3 Add device memory address validation
+  - [x] 3.4 Implement comprehensive error handling for D2H
+  - [x] 3.5 Verify all tests pass for D2H functionality
 
 - [ ] 4. Implement Synchronous D2D Transfer API
   - [ ] 4.1 Write tests for enhanced_dma_sync_d2d function
