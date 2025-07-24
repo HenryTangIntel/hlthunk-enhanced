@@ -14,12 +14,12 @@ These are the tasks to be completed for the spec detailed in @.agent-os/specs/20
   - [x] 1.4 Setup basic Makefile integration for new files
   - [x] 1.5 Verify all tests pass for header structure
 
-- [ ] 2. Implement Synchronous H2D Transfer API
-  - [ ] 2.1 Write tests for enhanced_dma_sync_h2d function
-  - [ ] 2.2 Implement enhanced_dma_sync_h2d with parameter validation
-  - [ ] 2.3 Add integration with hl-thunk memory management
-  - [ ] 2.4 Implement comprehensive error handling for H2D
-  - [ ] 2.5 Verify all tests pass for H2D functionality
+- [x] 2. Implement Synchronous H2D Transfer API
+  - [x] 2.1 Write tests for enhanced_dma_sync_h2d function
+  - [x] 2.2 Implement enhanced_dma_sync_h2d with parameter validation
+  - [x] 2.3 Add integration with hl-thunk memory management
+  - [x] 2.4 Implement comprehensive error handling for H2D
+  - [x] 2.5 Verify all tests pass for H2D functionality
 
 - [ ] 3. Implement Synchronous D2H Transfer API  
   - [ ] 3.1 Write tests for enhanced_dma_sync_d2h function
